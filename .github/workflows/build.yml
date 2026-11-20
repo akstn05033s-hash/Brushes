@@ -10,6 +10,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Fix old XIB deployment target
+        run: |
+          find . -name "*.xib" -exec sed -i '' 's/version="1300"/version="1500"/g' {} +
+          find . -name "*.xib" -exec sed -i '' 's/com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0"/com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" targetRuntime="iOS.CocoaTouch"/g' {} +
+          find . -name "*.xib" -exec perl -i -pe 's/<plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="\d+"\/>/<plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21507"\/>/g' {} +
+          find . -name "*.xib" -exec perl -i -pe 's/<deployment version="\d+" identifier="iOS"\/>/<deployment version="4608" identifier="iOS"\/>/g' {} +
+
       - name: Build App
         run: |
           xcodebuild -project Brushes.xcodeproj \
