@@ -1,0 +1,37 @@
+name: Build Unsigned IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build App
+        run: |
+          xcodebuild -project Brushes.xcodeproj \
+            -scheme Brushes \
+            -configuration Release \
+            -sdk iphoneos \
+            -arch arm64 \
+            IPHONEOS_DEPLOYMENT_TARGET=13.0 \
+            ENABLE_BITCODE=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build SYMROOT=$(PWD)/build
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Release-iphoneos/Brushes.app Payload/
+          zip -r Brushes.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Brushes-IPA
+          path: Brushes.ipa
